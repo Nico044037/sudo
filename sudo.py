@@ -8,7 +8,7 @@ const client = new Client({
   ]
 });
 
-const TOKEN = "YOUR_BOT_TOKEN";
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 // USERS WHO CAN ACTUALLY SUDO
 const SUDO_USERS = ["123456789012345678"];
