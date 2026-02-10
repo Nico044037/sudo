@@ -6,7 +6,7 @@ from discord.ext import commands
 from discord import app_commands
 
 # ================= BASIC CONFIG =================
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv("TOKEN")
 MAIN_GUILD_ID = int(os.getenv("GUILD_ID", "1452967364470505565"))
 DATA_FILE = "data.json"
 
