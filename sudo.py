@@ -8,7 +8,7 @@ const client = new Client({
   ]
 });
 
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv("TOKEN")
 
 // USERS WHO CAN ACTUALLY SUDO
 const SUDO_USERS = ["123456789012345678"];
