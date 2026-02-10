@@ -1,18 +1,19 @@
 import os
+import asyncio
 import discord
 from discord.ext import commands
 
 # ================= BASIC CONFIG =================
 TOKEN = os.getenv("TOKEN")
 
-# 🧑‍💻 USERS WHO CAN SUDO (PUT YOUR DISCORD ID HERE)
-SUDO_USERS = {1258115928525373570}
+# 🧑‍💻 USERS WHO CAN SUDO
+SUDO_USERS = {123456789012345678}  # PUT YOUR ID HERE
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-# 🔑 PREFIX IS NOW ;
+# PREFIX = ;
 bot = commands.Bot(
     command_prefix=";",
     intents=intents,
@@ -66,13 +67,19 @@ async def sudo(ctx, action: str, member: discord.Member = None, *, message: str 
         if webhook is None:
             webhook = await ctx.channel.create_webhook(name="BelugaSudo")
 
+        # ---------- FAKE TYPING DELAY ----------
+        delay = min(5, max(1, len(message) // 10))
+        async with ctx.channel.typing():
+            await asyncio.sleep(delay)
+
+        # Send impersonated message
         await webhook.send(
             content=message,
             username=member.display_name,
             avatar_url=member.display_avatar.url
         )
 
-        # delete the command message for realism
+        # Delete the sudo command for realism
         await ctx.message.delete()
         return
 
@@ -107,6 +114,6 @@ BelugaOS Terminal Help
 
 # ================= START =================
 if not TOKEN:
-    raise RuntimeError("DISCORD_TOKEN not set")
+    raise RuntimeError("TOKEN environment variable not set")
 
 bot.run(TOKEN)
