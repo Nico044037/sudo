@@ -7,8 +7,11 @@ from discord.ext import commands
 # ================= BASIC CONFIG =================
 TOKEN = os.getenv("TOKEN")
 
-# 🧑‍💻 USERS WHO CAN SUDO
-SUDO_USERS = {1258115928525373570}  # PUT YOUR DISCORD ID HERE
+# 🧑‍💻 USERS WHO CAN USE NORMAL SUDO
+SUDO_USERS = {123456789012345678}  # PUT YOUR DISCORD ID HERE
+
+# 🔒 USERNAME ALLOWED TO USE ;sudo start
+START_ALLOWED_USERNAME = "nico044037"
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -25,7 +28,7 @@ bot = commands.Bot(
 async def on_ready():
     print(f"✅ Logged in as {bot.user}")
 
-# ================= IMPORTANT FIX =================
+# ================= REQUIRED FOR PREFIX COMMANDS =================
 @bot.event
 async def on_message(message: discord.Message):
     if message.author.bot:
@@ -48,23 +51,39 @@ async def whoami(ctx):
 # ================= SUDO =================
 @bot.command()
 async def sudo(ctx, action: str, target: discord.Member = None, *, args: str = None):
-    if ctx.author.id not in SUDO_USERS:
+    # ---------- PERMISSION CHECK ----------
+    if ctx.author.id not in SUDO_USERS and action != "start":
         await ctx.send(
             f"{ctx.author.display_name} is not in the sudoers file.\nThis incident will be reported."
         )
         return
 
-    # ---------- IMPERSONATE ----------
+    # ---------- sudo start (SPECIAL) ----------
+    if action == "start":
+        if ctx.author.name != START_ALLOWED_USERNAME:
+            await ctx.send(
+                "sudo: only nico044037 may run this command"
+            )
+            return
+
+        await ctx.send("Starting system services...")
+        await asyncio.sleep(2)
+        await ctx.send("✔️ System started successfully.")
+        return
+
+    # ---------- sudo impersonate ----------
     if action == "impersonate":
         if not target or not args:
             await ctx.send("Usage: `;sudo impersonate @user message`")
             return
 
+        # Get or create webhook
         webhooks = await ctx.channel.webhooks()
         webhook = next((w for w in webhooks if w.name == "BelugaSudo"), None)
         if webhook is None:
             webhook = await ctx.channel.create_webhook(name="BelugaSudo")
 
+        # Fake typing delay
         delay = min(5, max(1, len(args) // 10))
         async with ctx.channel.typing():
             await asyncio.sleep(delay)
@@ -75,10 +94,11 @@ async def sudo(ctx, action: str, target: discord.Member = None, *, args: str = N
             avatar_url=target.display_avatar.url
         )
 
+        # Delete original command
         await ctx.message.delete()
         return
 
-    # ---------- BELUGA COMMANDS ----------
+    # ---------- BELUGA-STYLE COMMANDS ----------
     if action == "kill":
         await ctx.send(f"kill: ({args}) - No such process")
     elif action == "killall":
@@ -102,13 +122,12 @@ async def sudo(ctx, action: str, target: discord.Member = None, *, args: str = N
     elif action == "whoami":
         await ctx.send("root")
     else:
-        errors = [
+        await ctx.send(random.choice([
             "sudo: command not found",
             "sudo: permission denied",
             "sudo: segmentation fault",
             "sudo: something went very wrong"
-        ]
-        await ctx.send(random.choice(errors))
+        ]))
 
 # ================= HELP =================
 @bot.command()
@@ -133,9 +152,10 @@ Sudo:
 ;sudo reboot
 ;sudo apt install linux
 ;sudo chmod 000 /
-
-Chaos:
 ;sudo impersonate @user message
+
+Special:
+;sudo start   (nico044037 only)
 ```""")
 
 # ================= START =================
