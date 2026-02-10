@@ -1,272 +1,54 @@
-const { Client, GatewayIntentBits } = require("discord.js");
+import os
+import discord
+from discord.ext import commands
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
-});
+TOKEN = os.getenv("DISCORD_TOKEN")
 
-TOKEN = os.getenv("TOKEN")
+intents = discord.Intents.default()
+intents.message_content = True
 
-// USERS WHO CAN ACTUALLY SUDO
-const SUDO_USERS = ["1462864920168104095"];
+bot = commands.Bot(command_prefix="", intents=intents)
 
-// FAKE FILE SYSTEM
-let currentDir = "/";
-let files = {
-  "/": ["home", "etc", "root", "virus.exe"],
-  "/home": ["beluga", "notes.txt"],
-  "/home/beluga": ["secret.txt"],
-};
+SUDO_USERS = ["PUT_YOUR_DISCORD_ID"]
 
-// COMMAND HANDLER
-client.on("messageCreate", async (msg) => {
-  if (msg.author.bot) return;
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user}")
 
-  let input = msg.content.trim();
-  let isSudo = input.startsWith("sudo ");
-  let command = isSudo ? input.slice(5) : input;
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
 
-  const reply = (text) => msg.reply("```bash\n" + text + "\n```");
+    if message.content == "$help":
+        await message.reply("""```bash
+BelugaOS Help
+ls
+pwd
+whoami
+sudo rm virus.exe
+```""")
+        return
 
-  // SUDO CHECK
-  if (isSudo && !SUDO_USERS.includes(msg.author.id)) {
-    return reply(
-      `${msg.author.username} is not in the sudoers file.\nThis incident will be reported.`
-    );
-  }
+    content = message.content.strip()
+    is_sudo = content.startswith("sudo ")
 
-  // rm -rf /
-  if (command === "rm -rf /") {
-    return reply(
-      "💀 ERROR: SYSTEM FILES DELETED\n💀 Kernel panic - not syncing\n💀 RIP"
-    );
-  }
+    if is_sudo and str(message.author.id) not in SUDO_USERS:
+        await message.reply(
+            f"{message.author.name} is not in the sudoers file.\nThis incident will be reported."
+        )
+        return
 
-  // ls
-  if (command === "ls") {
-    return reply((files[currentDir] || []).join("  "));
-  }
+    if content == "ls":
+        await message.reply("home  etc  root  virus.exe")
 
-  // pwd
-  if (command === "pwd") {
-    return reply(currentDir);
-  }
+    elif content == "pwd":
+        await message.reply("/")
 
-  // whoami
-  if (command === "whoami") {
-    return reply(isSudo ? "root" : msg.author.username);
-  }
+    elif content == "whoami":
+        await message.reply("root" if is_sudo else message.author.name)
 
-  // cd
-  if (command.startsWith("cd")) {
-    let dir = command.split(" ")[1];
-    let newDir = dir === ".."
-      ? "/"
-      : currentDir === "/"
-      ? `/${dir}`
-      : `${currentDir}/${dir}`;
+    elif content.startswith("sudo rm"):
+        await message.reply("virus.exe removed.")
 
-    if (files[newDir]) {
-      currentDir = newDir;
-      return reply("");
-    } else {
-      return reply(`bash: cd: ${dir}: No such file or directory`);
-    }
-  }
-
-  // cat
-  if (command.startsWith("cat")) {
-    let file = command.split(" ")[1];
-    if (file === "secret.txt") {
-      return reply("DO NOT READ THIS FILE 😡");
-    }
-    return reply(`cat: ${file}: Permission denied`);
-  }
-
-  // neofetch
-  if (command === "neofetch") {
-    return reply(`
-OS: BelugaOS
-Kernel: 5.99.99-beluga
-Uptime: 2 minutes
-Shell: bash
-CPU: Discord Nitro i9
-Memory: 9999MiB / 9999MiB
-    `);
-  }
-
-  // apt install
-  if (command.startsWith("apt install")) {
-    let pkg = command.replace("apt install", "").trim();
-    return reply(
-      `Reading package lists...\nInstalling ${pkg}...\nDone.`
-    );
-  }
-
-  // shutdown / reboot
-  if (command === "shutdown" || command === "reboot") {
-    return reply("System is going down NOW!");
-  }
-
-  // touch
-  if (command.startsWith("touch")) {
-    let file = command.split(" ")[1];
-    files[currentDir].push(file);
-    return reply("");
-  }
-
-  // rm
-  if (command.startsWith("rm")) {
-    let file = command.split(" ")[1];
-    files[currentDir] = files[currentDir].filter(f => f !== file);
-    return reply("");
-  }
-
-  // DEFAULT
-  reply(`bash: ${command}: command not found`);
-});
-
-client.once("ready", () => {
-  console.log(`Logged in as ${client.user.tag}`);
-});
-
-client.login(TOKEN);
-const { Client, GatewayIntentBits } = require("discord.js");
-
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
-});
-
-const TOKEN = "YOUR_BOT_TOKEN";
-
-// USERS WHO CAN ACTUALLY SUDO
-const SUDO_USERS = ["123456789012345678"];
-
-// FAKE FILE SYSTEM
-let currentDir = "/";
-let files = {
-  "/": ["home", "etc", "root", "virus.exe"],
-  "/home": ["beluga", "notes.txt"],
-  "/home/beluga": ["secret.txt"],
-};
-
-// COMMAND HANDLER
-client.on("messageCreate", async (msg) => {
-  if (msg.author.bot) return;
-
-  let input = msg.content.trim();
-  let isSudo = input.startsWith("sudo ");
-  let command = isSudo ? input.slice(5) : input;
-
-  const reply = (text) => msg.reply("```bash\n" + text + "\n```");
-
-  // SUDO CHECK
-  if (isSudo && !SUDO_USERS.includes(msg.author.id)) {
-    return reply(
-      `${msg.author.username} is not in the sudoers file.\nThis incident will be reported.`
-    );
-  }
-
-  // rm -rf /
-  if (command === "rm -rf /") {
-    return reply(
-      "💀 ERROR: SYSTEM FILES DELETED\n💀 Kernel panic - not syncing\n💀 RIP"
-    );
-  }
-
-  // ls
-  if (command === "ls") {
-    return reply((files[currentDir] || []).join("  "));
-  }
-
-  // pwd
-  if (command === "pwd") {
-    return reply(currentDir);
-  }
-
-  // whoami
-  if (command === "whoami") {
-    return reply(isSudo ? "root" : msg.author.username);
-  }
-
-  // cd
-  if (command.startsWith("cd")) {
-    let dir = command.split(" ")[1];
-    let newDir = dir === ".."
-      ? "/"
-      : currentDir === "/"
-      ? `/${dir}`
-      : `${currentDir}/${dir}`;
-
-    if (files[newDir]) {
-      currentDir = newDir;
-      return reply("");
-    } else {
-      return reply(`bash: cd: ${dir}: No such file or directory`);
-    }
-  }
-
-  // cat
-  if (command.startsWith("cat")) {
-    let file = command.split(" ")[1];
-    if (file === "secret.txt") {
-      return reply("DO NOT READ THIS FILE 😡");
-    }
-    return reply(`cat: ${file}: Permission denied`);
-  }
-
-  // neofetch
-  if (command === "neofetch") {
-    return reply(`
-OS: BelugaOS
-Kernel: 5.99.99-beluga
-Uptime: 2 minutes
-Shell: bash
-CPU: Discord Nitro i9
-Memory: 9999MiB / 9999MiB
-    `);
-  }
-
-  // apt install
-  if (command.startsWith("apt install")) {
-    let pkg = command.replace("apt install", "").trim();
-    return reply(
-      `Reading package lists...\nInstalling ${pkg}...\nDone.`
-    );
-  }
-
-  // shutdown / reboot
-  if (command === "shutdown" || command === "reboot") {
-    return reply("System is going down NOW!");
-  }
-
-  // touch
-  if (command.startsWith("touch")) {
-    let file = command.split(" ")[1];
-    files[currentDir].push(file);
-    return reply("");
-  }
-
-  // rm
-  if (command.startsWith("rm")) {
-    let file = command.split(" ")[1];
-    files[currentDir] = files[currentDir].filter(f => f !== file);
-    return reply("");
-  }
-
-  // DEFAULT
-  reply(`bash: ${command}: command not found`);
-});
-
-client.once("ready", () => {
-  console.log(`Logged in as ${client.user.tag}`);
-});
-
-client.login(TOKEN);
+bot.run(TOKEN)
