@@ -7,7 +7,7 @@ from discord.ext import commands
 TOKEN = os.getenv("TOKEN")
 
 # 🧑‍💻 USERS WHO CAN SUDO
-SUDO_USERS = {123456789012345678}  # PUT YOUR ID HERE
+SUDO_USERS = {1258115928525373570}  # PUT YOUR ID HERE
 
 intents = discord.Intents.default()
 intents.message_content = True
