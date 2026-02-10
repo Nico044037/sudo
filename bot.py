@@ -10,7 +10,7 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 MAIN_GUILD_ID = int(os.getenv("GUILD_ID", "1452967364470505565"))
 DATA_FILE = "data.json"
 
-# 🧑‍💻 USERS WHO CAN SUDO (PUT YOUR ID HERE)
+# 🧑‍💻 USERS WHO CAN SUDO (PUT YOUR DISCORD ID HERE)
 SUDO_USERS = {123456789012345678}
 
 intents = discord.Intents.default()
@@ -107,6 +107,15 @@ async def on_member_join(member: discord.Member):
         if channel:
             await channel.send(f"👋 Welcome {member.mention}!")
 
+# ================= ⚠️ IMPORTANT FIX =================
+@bot.event
+async def on_message(message: discord.Message):
+    if message.author.bot:
+        return
+
+    # VERY IMPORTANT: allow prefix commands to work
+    await bot.process_commands(message)
+
 # ================= SETUP =================
 @bot.tree.command(name="setup", description="Set welcome channel")
 @app_commands.checks.has_permissions(manage_guild=True)
@@ -174,25 +183,6 @@ async def sudo(ctx, *, command: str):
         await ctx.send("root")
     else:
         await ctx.send(f"sudo: {command}: command not found")
-
-# ================= MODERATION =================
-@bot.command()
-@commands.has_permissions(kick_members=True)
-async def kick(ctx, member: discord.Member, *, reason="No reason provided"):
-    await member.kick(reason=reason)
-    await ctx.send(f"👢 Kicked {member.mention}")
-
-@bot.command()
-@commands.has_permissions(manage_roles=True)
-async def autorole(ctx, action: str, role: discord.Role):
-    if action.lower() == "add":
-        autoroles.add(role.id)
-        save_data()
-        await ctx.send(f"✅ Added {role.mention} to autoroles")
-    elif action.lower() == "remove":
-        autoroles.discard(role.id)
-        save_data()
-        await ctx.send(f"❌ Removed {role.mention} from autoroles")
 
 # ================= START =================
 if not TOKEN:
