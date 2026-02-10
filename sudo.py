@@ -11,7 +11,7 @@ const client = new Client({
 TOKEN = os.getenv("TOKEN")
 
 // USERS WHO CAN ACTUALLY SUDO
-const SUDO_USERS = ["123456789012345678"];
+const SUDO_USERS = ["1462864920168104095"];
 
 // FAKE FILE SYSTEM
 let currentDir = "/";
